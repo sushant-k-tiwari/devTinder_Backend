@@ -7,7 +7,6 @@ const { User } = require("./models/user");
 app.use(express.json());
 
 app.post("/signup", async (req, res) => {
-  
   // const userObj = {
   //   firstName: "Sushant",
   //   lastName: "Kumar",
@@ -16,8 +15,8 @@ app.post("/signup", async (req, res) => {
   //   age: 23,
   //   gender: "male",
   // };
-  // //Creating a new instance of the User Model
-  
+
+  //Creating a new instance of the User Model
   const user = new User(req.body);
   try {
     await user.save();
@@ -27,9 +26,22 @@ app.post("/signup", async (req, res) => {
   }
 });
 
-app.get("/getUserData", async (req, res) => {
+// get user by email
+app.get("/user", async (req, res) => {
+  const userEmail = req.body.emailId;
+
   try {
-    const users = await User.find();
+    const user = await User.find({ emailId: userEmail });
+    res.send(user);
+  } catch (error) {
+    res.status(400).send("Something went wrong: ");
+  }
+});
+
+// Feed API - GET /feed - Get all the users
+app.get("/feed", async (req, res) => {
+  try {
+    const users = await User.find({});
     res.send(users);
   } catch (error) {
     res.status(400).send("Error getting the user: ", error.message);
