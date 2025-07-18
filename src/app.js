@@ -9,10 +9,11 @@ app.post("/signup", async (req, res) => {
   //Creating a new instance of the User Model
   const user = new User(req.body);
   try {
+    
     await user.save();
     res.send("User Added Successfully");
   } catch (error) {
-    res.status(400).send("Error saving the user: ", error.message);
+    res.status(400).send("Error saving the user " + error.message);
   }
 });
 
@@ -24,7 +25,7 @@ app.get("/user", async (req, res) => {
     const user = await User.find({ emailId: userEmail });
     res.send(user);
   } catch (error) {
-    res.status(400).send("Something went wrong: ");
+    res.status(400).send("Something went wrong: " + error.message);
   }
 });
 
@@ -34,7 +35,7 @@ app.get("/feed", async (req, res) => {
     const users = await User.find({});
     res.send(users);
   } catch (error) {
-    res.status(400).send("Error getting the user: ", error.message);
+    res.status(400).send("Error getting the user: " + error.message);
   }
 });
 
@@ -46,19 +47,30 @@ app.delete("/user", async (req, res) => {
     const user = await User.findByIdAndDelete(userId);
     res.send("User deleted successfully");
   } catch (error) {
-    res.status(400).send("Error deleting the user: ", error.message);
+    res.status(400).send("Error deleting the user: " + error.message);
   }
 });
 
 // Update the data of the user
-app.patch("/user", async (req, res) => {
-  const userId = req.body.userId;
+app.patch("/user/:userId", async (req, res) => {
+  const userId = req.params?.userId;
   const data = req.body;
   try {
-    const user = await User.findByIdAndUpdate(userId, data);
+    const ALLOWED_UPDATES = ["photoUrl", "gender", "about", "skills", "age"];
+    const isUpdateAllowed = Object.keys(data).every((key) => ALLOWED_UPDATES.includes(key));
+    if(!isUpdateAllowed){
+      throw new Error("Update not allowed!");
+    }
+    if(data.skills.lenght >8){
+      throw new Error("Maximum of 8 skills");
+    }
+
+    const user = await User.findByIdAndUpdate(userId, data, {
+      runValidators: true,
+    });
     res.send("User updated successfully");
-  } catch (error) {
-    res.status(400).send("Error updating the user: ", error.message);
+  } catch (err) {
+    res.status(400).send("UPDATE FAILED: " + err.message);
   }
 });
 
