@@ -1,7 +1,5 @@
 const mongoose = require("mongoose");
-
 const { Schema } = mongoose;
-
 const validator = require("validator");
 
 const userSchema = new Schema(
@@ -22,22 +20,16 @@ const userSchema = new Schema(
       unique: true,
       lowercase: true,
       trim: true,
-      validate(value){
-        if(!validator.isEmail(value)){
+      validate(value) {
+        if (!validator.isEmail(value)) {
           throw new Error("Invalid Email" + value);
         }
-      }
+      },
     },
     password: {
       type: String,
       required: true,
       minLength: 8,
-      maxLength: 20,
-      validate(value){
-        if(!validator.isStrongPassword(value)){
-          throw new Error("Enter a strong password" + value);
-        }
-      }
     },
     age: {
       type: Number,
@@ -54,11 +46,11 @@ const userSchema = new Schema(
     photoUrl: {
       type: String,
       default: "https://www.freepik.com/free-photos-vectors/placeholder",
-      validate(value){
-        if(!validator.isURL(value)){
+      validate(value) {
+        if (!validator.isURL(value)) {
           throw new Error("Invalid URL" + value);
         }
-      }
+      },
     },
     about: {
       type: String,

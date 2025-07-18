@@ -1,22 +1,53 @@
 const express = require("express");
 const { connectDB } = require("./config/database");
 const { User } = require("./models/user");
+const { validateSignupData } = require("./utils/validation");
+const bcrypt = require("bcrypt");
 
 const app = express();
 app.use(express.json());
 
+// Signup API
 app.post("/signup", async (req, res) => {
   //Creating a new instance of the User Model
-  const user = new User(req.body);
   try {
-    // //want to add a check for photoUrl so user cannot send any giberish url
-    // if (!user.photoUrl.startsWith("https://")) {
-    //   throw new Error("Not Secure photoUrl");
-    // }
+    // Validation of data
+    validateSignupData(req);
+
+    const { firstName, lastName, emailId, password, age } = req.body;
+    // Hashing the password
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const user = new User({
+      firstName,
+      lastName,
+      emailId,
+      password: hashedPassword,
+      age,
+    });
     await user.save();
     res.send("User Added Successfully");
   } catch (error) {
-    res.status(400).send("Error saving the user " + error.message);
+    res.status(400).send("ERROR: " + error.message);
+  }
+});
+
+// Login API
+app.post("/login", async (req, res) => {
+  try {
+    const { emailId, password } = req.body;
+    const user = await User.findOne({ emailId });
+    if (!user) {
+      throw new Error("Invalid Credentials");
+    }
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+    if (!isPasswordValid) {
+      throw new Error("Invalid Credentials");
+    } else {
+      res.send("User logged in successfully");
+    }
+  } catch (error) {
+    res.status(400).send("ERROR: " + error.message);
   }
 });
 
