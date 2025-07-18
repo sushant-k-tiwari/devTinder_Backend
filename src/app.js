@@ -9,7 +9,10 @@ app.post("/signup", async (req, res) => {
   //Creating a new instance of the User Model
   const user = new User(req.body);
   try {
-    
+    // //want to add a check for photoUrl so user cannot send any giberish url
+    // if (!user.photoUrl.startsWith("https://")) {
+    //   throw new Error("Not Secure photoUrl");
+    // }
     await user.save();
     res.send("User Added Successfully");
   } catch (error) {
@@ -57,11 +60,13 @@ app.patch("/user/:userId", async (req, res) => {
   const data = req.body;
   try {
     const ALLOWED_UPDATES = ["photoUrl", "gender", "about", "skills", "age"];
-    const isUpdateAllowed = Object.keys(data).every((key) => ALLOWED_UPDATES.includes(key));
-    if(!isUpdateAllowed){
+    const isUpdateAllowed = Object.keys(data).every((key) =>
+      ALLOWED_UPDATES.includes(key)
+    );
+    if (!isUpdateAllowed) {
       throw new Error("Update not allowed!");
     }
-    if(data.skills.lenght >8){
+    if (data.skills.lenght > 8) {
       throw new Error("Maximum of 8 skills");
     }
 
