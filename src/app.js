@@ -1,21 +1,11 @@
 const express = require("express");
 const { connectDB } = require("./config/database");
-
-const app = express();
 const { User } = require("./models/user");
 
+const app = express();
 app.use(express.json());
 
 app.post("/signup", async (req, res) => {
-  // const userObj = {
-  //   firstName: "Sushant",
-  //   lastName: "Kumar",
-  //   emailId: "sushant@sushant.com",
-  //   password: "123456",
-  //   age: 23,
-  //   gender: "male",
-  // };
-
   //Creating a new instance of the User Model
   const user = new User(req.body);
   try {
@@ -45,6 +35,30 @@ app.get("/feed", async (req, res) => {
     res.send(users);
   } catch (error) {
     res.status(400).send("Error getting the user: ", error.message);
+  }
+});
+
+// DELETE API /user
+app.delete("/user", async (req, res) => {
+  const userId = req.body.userId;
+  try {
+    console.log(userId);
+    const user = await User.findByIdAndDelete(userId);
+    res.send("User deleted successfully");
+  } catch (error) {
+    res.status(400).send("Error deleting the user: ", error.message);
+  }
+});
+
+// Update the data of the user
+app.patch("/user", async (req, res) => {
+  const userId = req.body.userId;
+  const data = req.body;
+  try {
+    const user = await User.findByIdAndUpdate(userId, data);
+    res.send("User updated successfully");
+  } catch (error) {
+    res.status(400).send("Error updating the user: ", error.message);
   }
 });
 
