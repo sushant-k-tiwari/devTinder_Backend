@@ -5,6 +5,7 @@ const { validateSignupData } = require("./utils/validation");
 const bcrypt = require("bcrypt");
 const cookieParser = require("cookie-parser");
 const jwt = require("jsonwebtoken");
+const { userAuth } = require("../middlewares/auth");
 
 const app = express();
 app.use(express.json());
@@ -46,8 +47,12 @@ app.post("/login", async (req, res) => {
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (isPasswordValid) {
       // Add JWT token
-      const token = jwt.sign({ id: user._id }, "sushant@Amazing66");
-      res.cookie("token", token);
+      const token = jwt.sign({ _id: user._id }, "sushant@Amazing66", {
+        expiresIn: "1d",
+      });
+      res.cookie("token", token, {
+        expires: new Date(Date.now() + 8 * 3600000),
+      });
 
       res.send("User logged in successfully");
     } else {
@@ -59,29 +64,34 @@ app.post("/login", async (req, res) => {
 });
 
 // Profile API
-app.get("/profile", async (req, res) => {
+app.get("/profile", userAuth, async (req, res) => {
   try {
-    const cookies = req.cookies;
-    const { token } = cookies;
-    if(!token){
-      throw new Error("Invalid Token")
-    }
-    const decodedMessage = await jwt.verify(token, "sushant@Amazing66");
-    const { id } = decodedMessage;
-
-    const user = await User.findById(id);
-    if(!user){
-      throw new Error("User not found!")
-    }
+    const user = req.user;
     res.send(user);
   } catch (error) {
     res.status(400).send("ERROR: " + error.message);
   }
-
-  // console.log(decodedMessage);
 });
 
-// get user by email
+// sendConnectionRequest API
+app.post("/sendConnectionRequest", userAuth, async (req, res) => {
+  res.send("Connection Request Sent");
+});
+
+connectDB()
+  .then(() => {
+    console.log("Database is connected");
+    app.listen(8000, () => {
+      console.log("Server is listening on port 8000");
+    });
+  })
+  .catch((err) => {
+    console.log(err);
+  });
+
+// Testing APIs
+/**
+   * // get user by email
 app.get("/user", async (req, res) => {
   const userEmail = req.body.emailId;
 
@@ -143,14 +153,4 @@ app.patch("/user/:userId", async (req, res) => {
 app.get("/test", (req, res) => {
   res.send("Hello World");
 });
-
-connectDB()
-  .then(() => {
-    console.log("Database is connected");
-    app.listen(8000, () => {
-      console.log("Server is listening on port 8000");
-    });
-  })
-  .catch((err) => {
-    console.log(err);
-  });
+   */
