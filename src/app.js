@@ -3,9 +3,12 @@ const { connectDB } = require("./config/database");
 const { User } = require("./models/user");
 const { validateSignupData } = require("./utils/validation");
 const bcrypt = require("bcrypt");
+const cookieParser = require("cookie-parser");
+const jwt = require("jsonwebtoken");
 
 const app = express();
 app.use(express.json());
+app.use(cookieParser());
 
 // Signup API
 app.post("/signup", async (req, res) => {
@@ -41,14 +44,41 @@ app.post("/login", async (req, res) => {
       throw new Error("Invalid Credentials");
     }
     const isPasswordValid = await bcrypt.compare(password, user.password);
-    if (!isPasswordValid) {
-      throw new Error("Invalid Credentials");
-    } else {
+    if (isPasswordValid) {
+      // Add JWT token
+      const token = jwt.sign({ id: user._id }, "sushant@Amazing66");
+      res.cookie("token", token);
+
       res.send("User logged in successfully");
+    } else {
+      throw new Error("Invalid Credentials");
     }
   } catch (error) {
     res.status(400).send("ERROR: " + error.message);
   }
+});
+
+// Profile API
+app.get("/profile", async (req, res) => {
+  try {
+    const cookies = req.cookies;
+    const { token } = cookies;
+    if(!token){
+      throw new Error("Invalid Token")
+    }
+    const decodedMessage = await jwt.verify(token, "sushant@Amazing66");
+    const { id } = decodedMessage;
+
+    const user = await User.findById(id);
+    if(!user){
+      throw new Error("User not found!")
+    }
+    res.send(user);
+  } catch (error) {
+    res.status(400).send("ERROR: " + error.message);
+  }
+
+  // console.log(decodedMessage);
 });
 
 // get user by email
