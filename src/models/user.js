@@ -84,6 +84,7 @@ userSchema.methods.getJWT = async function () {
   return token;
 };
 
+userSchema.index({firstName: 1})
 userSchema.methods.passwordValidation = async function (passwordInputByUser) {
   const user = this;
   const hashedPassword = user.password;
