@@ -1,13 +1,15 @@
 const mongoose = require("mongoose");
 const { Schema } = mongoose;
-const connectionRequestSchema = new mongoose.Schema(
+const connectionRequestSchema = new Schema(
   {
     fromUserId: {
       type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
       required: true,
     },
     toUserId: {
       type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
       required: true,
     },
     status: {
@@ -24,7 +26,7 @@ const connectionRequestSchema = new mongoose.Schema(
   }
 );
 
-connectionRequestSchema.index({fromUserId: 1, toUserId: 1});
+connectionRequestSchema.index({ fromUserId: 1, toUserId: 1 });
 
 connectionRequestSchema.pre("save", async function (next) {
   const connectionRequest = this;
