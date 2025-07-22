@@ -1,6 +1,7 @@
 const express = require("express");
 const { userAuth } = require("../../middlewares/auth");
 const { ConnectionRequest } = require("../models/connectionRequest");
+const { User } = require("../models/user");
 const userRouter = express.Router();
 
 const SAFE_USER_DATA = "firstName lastName photoUrl age gender about skills";
@@ -41,7 +42,7 @@ userRouter.get("/user/connections", userAuth, async (req, res) => {
       .populate("toUserId", SAFE_USER_DATA);
 
     const data = connections.map((row) => {
-      if(row.fromUserId._id.toString() === loggedInUserId.toString()) {
+      if (row.fromUserId._id.toString() === loggedInUserId.toString()) {
         return row.toUserId;
       } else {
         return row.fromUserId;
@@ -60,6 +61,29 @@ userRouter.get("/user/connections", userAuth, async (req, res) => {
 // GET feed API
 userRouter.get("/user/feed", userAuth, async (req, res) => {
   try {
+    const user = req.user;
+    const loggedInUserId = user._id;
+
+    const connectionRequest = await ConnectionRequest.find({
+      $or: [{ fromUserId: loggedInUserId }, { toUserId: loggedInUserId }],
+    });
+
+    const hideUsersFromFeed = new Set();
+    connectionRequest.forEach((row) => {
+      hideUsersFromFeed.add(row.fromUserId.toString());
+      hideUsersFromFeed.add(row.toUserId.toString());
+    });
+    // console.log(hideUsersFromFeed);
+    const users = await User.find({
+      $and: [
+        { _id: { $nin: Array.from(hideUsersFromFeed) } },
+        {
+          _id: { $ne: loggedInUserId },
+        },
+      ],
+    }).select(SAFE_USER_DATA);
+
+    res.json({ message: "Feed Data", data: users });
   } catch (error) {
     res.json({ message: "ERROR: " + error.message });
   }
