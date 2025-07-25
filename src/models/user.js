@@ -9,7 +9,7 @@ const userSchema = new Schema(
     firstName: {
       type: String,
       requried: true,
-      minLength: 4,
+      minLength: 2,
       maxLength: 20,
     },
     lastName: {
@@ -47,7 +47,8 @@ const userSchema = new Schema(
     },
     photoUrl: {
       type: String,
-      default: "https://www.freepik.com/free-photos-vectors/placeholder",
+      default:
+        "https://img.freepik.com/premium-vector/character-avatar-isolated_729149-194801.jpg",
       validate(value) {
         if (!validator.isURL(value)) {
           throw new Error("Invalid URL" + value);
@@ -84,7 +85,7 @@ userSchema.methods.getJWT = async function () {
   return token;
 };
 
-userSchema.index({firstName: 1})
+userSchema.index({ firstName: 1 });
 userSchema.methods.passwordValidation = async function (passwordInputByUser) {
   const user = this;
   const hashedPassword = user.password;
