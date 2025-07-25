@@ -7,7 +7,7 @@ const userRouter = express.Router();
 const SAFE_USER_DATA = "firstName lastName photoUrl age gender about skills";
 
 //GET all the pending connection requests for logged in user
-userRouter.get("/user/requests/received", userAuth, async (req, res) => {
+userRouter.get("/user/requests", userAuth, async (req, res) => {
   try {
     const loggedInUser = req.user;
 

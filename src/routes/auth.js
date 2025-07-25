@@ -9,7 +9,16 @@ authRouter.post("/signup", async (req, res) => {
     // Validation of data
     validateSignupData(req);
 
-    const { firstName, lastName, emailId, password, age } = req.body;
+    const {
+      firstName,
+      lastName,
+      emailId,
+      password,
+      age,
+      gender,
+      about,
+      photoUrl,
+    } = req.body;
     // Hashing the password
     const hashedPassword = await bcrypt.hash(password, 10);
 
