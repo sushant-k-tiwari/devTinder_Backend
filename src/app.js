@@ -23,6 +23,10 @@ app.use("/", profileRouter);
 app.use("/", requestRouter);
 app.use("/", userRouter);
 
+app.get("/", (req, res) => {
+  res.send("✅ Your backend server is running correctly!");
+});
+
 connectDB()
   .then(() => {
     console.log("Database is connected");
